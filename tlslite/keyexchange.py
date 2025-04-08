@@ -23,6 +23,7 @@ from .utils.x25519 import x25519, x448, X25519_G, X448_G, X25519_ORDER_SIZE, \
         X448_ORDER_SIZE
 from .utils.compat import int_types, ML_KEM_AVAILABLE
 from .utils.codec import DecodeError
+from .utils.debug import save_and_return
 
 if ML_KEM_AVAILABLE:
     from kyber_py.ml_kem import ML_KEM_768, ML_KEM_1024
@@ -1134,7 +1135,7 @@ class ECDHKeyExchange(RawDHKeyExchange):
             ecdh.load_received_public_key_bytes(peer_share,
                                                 valid_encodings=
                                                 valid_point_formats)
-            return bytearray(ecdh.generate_sharedsecret_bytes())
+            return save_and_return("shared_secret", bytearray(ecdh.generate_sharedsecret_bytes()))
         S = ecdhYc * private
 
         return numberToByteArray(S.x(), getPointByteSize(ecdhYc))
