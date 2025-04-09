@@ -40,6 +40,7 @@ from .handshakehelpers import HandshakeHelpers
 from .utils.cipherfactory import createAESCCM, createAESCCM_8, \
         createAESGCM, createCHACHA20
 from .utils.compression import choose_compression_send_algo
+from .utils.debug import save_and_return
 
 class TLSConnection(TLSRecordLayer):
     """
@@ -1308,20 +1309,24 @@ class TLSConnection(TLSRecordLayer):
         secret = bytearray(prf_size)
         # Early Secret
         secret = secureHMAC(secret, psk, prfName)
+        save_and_return("early_secret", secret)
 
         # Handshake Secret
         secret = derive_secret(secret, bytearray(b'derived'),
                                None, prfName)
         secret = secureHMAC(secret, shared_sec, prfName)
+        save_and_return("handshake_secret", secret)
 
         sr_handshake_traffic_secret = derive_secret(secret,
                                                     bytearray(b's hs traffic'),
                                                     self._handshake_hash,
                                                     prfName)
+        save_and_return("server_handshake_traffic_secret", sr_handshake_traffic_secret)
         cl_handshake_traffic_secret = derive_secret(secret,
                                                     bytearray(b'c hs traffic'),
                                                     self._handshake_hash,
                                                     prfName)
+        save_and_return("client_handshake_traffic_secret", cl_handshake_traffic_secret) 
 
         # prepare for reading encrypted messages
         self._recordLayer.calcTLS1_3PendingState(
@@ -2899,6 +2904,8 @@ class TLSConnection(TLSRecordLayer):
                 key_share = self._genKeyShareEntry(selected_group, version)
 
                 try:
+                    save_and_return("dh_server_private_key", key_share.private.to_string())
+                    save_and_return("dh_client_public_key", cl_key_share.key_exchange)
                     shared_sec = kex.calc_shared_key(key_share.private,
                                                      cl_key_share.key_exchange)
                 except TLSIllegalParameterException as alert:
@@ -2943,19 +2950,24 @@ class TLSConnection(TLSRecordLayer):
 
         # Early secret
         secret = secureHMAC(secret, psk, prf_name)
+        save_and_return("early_secret", secret)
 
         # Handshake Secret
         secret = derive_secret(secret, bytearray(b'derived'), None, prf_name)
         secret = secureHMAC(secret, shared_sec, prf_name)
+        save_and_return("shared_secret", shared_sec)
+        save_and_return("handshake_secret", secret)
 
         sr_handshake_traffic_secret = derive_secret(secret,
                                                     bytearray(b's hs traffic'),
                                                     self._handshake_hash,
                                                     prf_name)
+        save_and_return("server_handshake_traffic_secret", sr_handshake_traffic_secret)
         cl_handshake_traffic_secret = derive_secret(secret,
                                                     bytearray(b'c hs traffic'),
                                                     self._handshake_hash,
                                                     prf_name)
+        save_and_return("client_handshake_traffic_secret", cl_handshake_traffic_secret)
         self.version = version
         self._recordLayer.calcTLS1_3PendingState(
             cipherSuite,
@@ -4057,6 +4069,7 @@ class TLSConnection(TLSRecordLayer):
                 writer = Writer()
                 writer.add(HandshakeType.message_hash, 1)
                 writer.addVarSeq(client_hello_hash, 1, 3)
+                save_and_return("client_hello_handshake", writer.bytes)
                 self._handshake_hash.update(writer.bytes)
 
                 # send the version that was really selected
