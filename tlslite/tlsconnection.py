@@ -1285,8 +1285,11 @@ class TLSConnection(TLSRecordLayer):
                 raise TLSIllegalParameterException("Server selected not "
                                                    "advertised group.")
             kex = self._getKEX(sr_kex.group, self.version)
+            save_and_return("dh_client_private_key", cl_kex.private)
+            save_and_return("dh_server_public_key", sr_kex.key_exchange)
             shared_sec = kex.calc_shared_key(cl_kex.private,
                                              sr_kex.key_exchange)
+            save_and_return("dh_shared_secret", shared_sec)
         else:
             shared_sec = bytearray(prf_size)
 
@@ -1521,11 +1524,14 @@ class TLSConnection(TLSRecordLayer):
         # Master secret
         secret = derive_secret(secret, bytearray(b'derived'), None, prfName)
         secret = secureHMAC(secret, bytearray(prf_size), prfName)
+        save_and_return("master_secret", secret)
 
         cl_app_traffic = derive_secret(secret, bytearray(b'c ap traffic'),
                                        server_finish_hs, prfName)
         sr_app_traffic = derive_secret(secret, bytearray(b's ap traffic'),
                                        server_finish_hs, prfName)
+        save_and_return("client_application_traffic_secret_0", cl_app_traffic)
+        save_and_return("server_application_traffic_secret_0", sr_app_traffic)
 
         if certificate_request:
             if clientCertChain:
@@ -2904,10 +2910,11 @@ class TLSConnection(TLSRecordLayer):
                 key_share = self._genKeyShareEntry(selected_group, version)
 
                 try:
-                    save_and_return("dh_server_private_key", key_share.private.to_string())
+                    save_and_return("dh_server_private_key", key_share.private)
                     save_and_return("dh_client_public_key", cl_key_share.key_exchange)
                     shared_sec = kex.calc_shared_key(key_share.private,
                                                      cl_key_share.key_exchange)
+                    save_and_return("dh_shared_secret", shared_sec)
                 except TLSIllegalParameterException as alert:
                     for result in self._sendError(
                             AlertDescription.illegal_parameter,
@@ -2955,7 +2962,6 @@ class TLSConnection(TLSRecordLayer):
         # Handshake Secret
         secret = derive_secret(secret, bytearray(b'derived'), None, prf_name)
         secret = secureHMAC(secret, shared_sec, prf_name)
-        save_and_return("shared_secret", shared_sec)
         save_and_return("handshake_secret", secret)
 
         sr_handshake_traffic_secret = derive_secret(secret,
@@ -3124,11 +3130,14 @@ class TLSConnection(TLSRecordLayer):
         # Master secret
         secret = derive_secret(secret, bytearray(b'derived'), None, prf_name)
         secret = secureHMAC(secret, bytearray(prf_size), prf_name)
+        save_and_return("master_secret", secret)
 
         cl_app_traffic = derive_secret(secret, bytearray(b'c ap traffic'),
                                        self._handshake_hash, prf_name)
         sr_app_traffic = derive_secret(secret, bytearray(b's ap traffic'),
                                        self._handshake_hash, prf_name)
+        save_and_return("client_application_traffic_secret_0", cl_app_traffic)
+        save_and_return("server_application_traffic_secret_0", sr_app_traffic)
         self._recordLayer.calcTLS1_3PendingState(serverHello.cipher_suite,
                                                  cl_app_traffic,
                                                  sr_app_traffic,

@@ -1135,7 +1135,7 @@ class ECDHKeyExchange(RawDHKeyExchange):
             ecdh.load_received_public_key_bytes(peer_share,
                                                 valid_encodings=
                                                 valid_point_formats)
-            return save_and_return("shared_secret", bytearray(ecdh.generate_sharedsecret_bytes()))
+            return bytearray(ecdh.generate_sharedsecret_bytes())
         S = ecdhYc * private
 
         return numberToByteArray(S.x(), getPointByteSize(ecdhYc))
