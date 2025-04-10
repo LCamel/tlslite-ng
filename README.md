@@ -16,23 +16,18 @@ pip install ecdsa
 ./server.sh
 
 # in another shell
-./client.sh
-or
 ./openssl_client.sh
 ```
 
 ```
 rm -fR saved_server/; ./server.sh
 
-# without SSLKEYLOGFILE
-rm -fR saved_client/; ./tcpdump.sh ./client.sh
 # with SSLKEYLOGFILE
 rm -fR saved_client/; ./tcpdump.sh ./openssl_client.sh  
 ```
 
+(TODO: ./client.sh might have some problem)
 
-
-There shall be outputs like:
 
 
 Usually there will be those handshake messages:
@@ -48,7 +43,21 @@ Usually there will be those handshake messages:
 6 client Finished (4 + hash.length = 36 bytes)
       -- enough for client_application_traffic_secret_0
 
-extra: server send tickets
+extra: server send new session tickets
 ```
 
 Note: Use the transcript until "client Finished". No more. No less.
+
+
+```
+% find . | grep saved | grep 'handshake_[0-9]' | sort | xargs -n 1 python3 ./identify_handshake.py
+./sample_data/server_openssl_client/saved_server/000_handshake_0: client_hello (1)
+./sample_data/server_openssl_client/saved_server/004_handshake_1: server_hello (2)
+./sample_data/server_openssl_client/saved_server/009_handshake_2: encrypted_extensions (8)
+./sample_data/server_openssl_client/saved_server/010_handshake_3: certificate (11)
+./sample_data/server_openssl_client/saved_server/011_handshake_4: certificate_verify (15)
+./sample_data/server_openssl_client/saved_server/012_handshake_5: finished (20)
+./sample_data/server_openssl_client/saved_server/016_handshake_6: finished (20)
+./sample_data/server_openssl_client/saved_server/017_handshake_7: new_session_ticket (4)
+./sample_data/server_openssl_client/saved_server/018_handshake_8: new_session_ticket (4)
+```
