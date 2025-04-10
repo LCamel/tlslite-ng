@@ -23,7 +23,7 @@ from .utils.x25519 import x25519, x448, X25519_G, X448_G, X25519_ORDER_SIZE, \
         X448_ORDER_SIZE
 from .utils.compat import int_types, ML_KEM_AVAILABLE
 from .utils.codec import DecodeError
-from .utils.debug import save_and_return
+from .utils.debug import debug_save
 
 if ML_KEM_AVAILABLE:
     from kyber_py.ml_kem import ML_KEM_768, ML_KEM_1024

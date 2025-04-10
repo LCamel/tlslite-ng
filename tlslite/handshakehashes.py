@@ -6,7 +6,7 @@
 from .utils.compat import compat26Str, compatHMAC
 from .utils.cryptomath import MD5, SHA1
 from .utils import tlshashlib as hashlib
-from .utils.debug import save_and_return
+from .utils.debug import debug_save
 
 class HandshakeHashes(object):
 
@@ -42,7 +42,7 @@ class HandshakeHashes(object):
         self._handshakeSHA384.update(text)
         self._handshakeSHA512.update(text)
         self._handshake_buffer += text
-        save_and_return(f"handshake_{self._save_counter}", text)
+        debug_save(f"handshake_{self._save_counter}", text)
         self._save_counter += 1
 
     def digest(self, digest=None):

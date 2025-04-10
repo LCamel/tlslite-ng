@@ -11,7 +11,7 @@ def is_function_in_stack(function_name):
 def is_server():
     return is_function_in_stack('handshakeServer')
 
-def save_and_return(filename, data):
+def debug_save(filename, data):
     if not isinstance(data, (bytes, bytearray)):
         data = data.to_string() # for some private keys (may fail)
 
