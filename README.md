@@ -1,6 +1,6 @@
 This repo is forked from tlslight-ng.
 
-Its purpose is to generate test vectors for developing other TLS implementations.
+Its purpose is to generate test vectors for developing other TLS implementations. (see sample_data/)
 
 Main changes:
 - Added lots of `debug_save()` calls.

@@ -10,3 +10,8 @@ pylint_report.txt
 build/
 docs/_build/
 htmlcov/
+# only in the forked version
+server.crt
+server.key
+saved_server/
+saved_client/
