@@ -40,13 +40,14 @@ Usually there will be those handshake messages:
 3 Certificate (< 500 bytes)
 4 Certificate Verify (< 100 bytes)
 5 server Finished (4 + hash.length = 36 bytes)
-6 client Finished (4 + hash.length = 36 bytes)
       -- enough for client_application_traffic_secret_0
+
+6 client Finished (4 + hash.length = 36 bytes)
 
 extra: server send new session tickets
 ```
 
-Note: Use the transcript until "client Finished". No more. No less.
+Note: Use the transcript until "server Finished". No more. No less.
 
 
 ```
