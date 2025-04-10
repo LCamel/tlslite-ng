@@ -61,3 +61,15 @@ Note: Use the transcript until "client Finished". No more. No less.
 ./sample_data/server_openssl_client/saved_server/017_handshake_7: new_session_ticket (4)
 ./sample_data/server_openssl_client/saved_server/018_handshake_8: new_session_ticket (4)
 ```
+
+```
+寫一個單獨的 test.py
+根據 TLS 1.3 的 key schedule algorithm
+使用 SHA256
+input
+- 沒有 PRK
+- 使用 DH shared secret: sample_data/server_openssl_client/saved_server/003_dh_shared_secret
+- 使用 transcript ./sample_data/server_openssl_client/saved_server/000_handshake_0  ./sample_data/server_openssl_client/saved_server/004_handshake_1
+計算出 ./sample_data/server_openssl_client/saved_server/008_client_handshake_traffic_secret
+可以使用 cryptomath.py
+```
