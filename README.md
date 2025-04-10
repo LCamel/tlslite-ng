@@ -73,3 +73,11 @@ input
 計算出 ./sample_data/server_openssl_client/saved_server/008_client_handshake_traffic_secret
 可以使用 cryptomath.py
 ```
+
+```
+根據 TLS 1.3 的 key schedule algorithm
+使用 SHA256
+繼續 test.py
+使用 ./sample_data/server_openssl_client/saved_server/ 中的 009_handshake_2 010_handshake_3 011_handshake_4 012_handshake_5 016_handshake_6 作為 transcript
+計算出 ./sample_data/server_openssl_client/saved_server/014_client_application_traffic_secret_0
+```
