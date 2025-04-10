@@ -1,22 +1,27 @@
-This is a fork of tlslite-ng.
+This repo is forked from tlslight-ng.
 
-I only want to generate test vectors from it.
+Its purpose is to generate test vectors for developing other TLS implementations.
+
+Main changes:
+- Added lots of `debug_save()` calls.
+- Added some handy scripts in the root directory.
+- When running, it generates `saved_server/` and `saved_client/`, which are the main outputs.
 
 ```
 python3 -m venv tlslite-env
 source tlslite-env/bin/activate
 pip install ecdsa
-PYTHONPATH=. ./scripts/tls.py
+./key_cert.sh
+
+./server.sh
+
+# in another shell
+./client.sh
+./test_tls13_minimal.sh
 ```
 
-```
-# for ecdsa_secp256r1_sha256
-openssl req -x509 -nodes -days 365 -newkey ec:<(openssl ecparam -name prime256v1) -keyout server.key -out server.crt -sha256
-```
 
-grep "save_and_return()"
-
-Saving data for key schedule debugging.
+There shall be outputs like:
 ```
 About to handshake...
 Saving data to saved_server/handshake_0
