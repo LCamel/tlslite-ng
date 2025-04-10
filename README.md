@@ -17,32 +17,38 @@ pip install ecdsa
 
 # in another shell
 ./client.sh
-./test_tls13_minimal.sh
+or
+./openssl_client.sh
 ```
+
+```
+rm -fR saved_server/; ./server.sh
+
+# without SSLKEYLOGFILE
+rm -fR saved_client/; ./tcpdump.sh ./client.sh
+# with SSLKEYLOGFILE
+rm -fR saved_client/; ./tcpdump.sh ./openssl_client.sh  
+```
+
 
 
 There shall be outputs like:
+
+
+Usually there will be those handshake messages:
 ```
-About to handshake...
-Saving data to saved_server/handshake_0
-Saving data to saved_server/dh_server_private_key
-Saving data to saved_server/dh_client_public_key
-Saving data to saved_server/dh_shared_secret
-Saving data to saved_server/handshake_1
-Saving data to saved_server/early_secret
-Saving data to saved_server/handshake_secret
-Saving data to saved_server/server_handshake_traffic_secret
-Saving data to saved_server/client_handshake_traffic_secret
-Saving data to saved_server/handshake_2
-Saving data to saved_server/handshake_3
-Saving data to saved_server/handshake_4
-Saving data to saved_server/handshake_5
-Saving data to saved_server/master_secret
-Saving data to saved_server/client_application_traffic_secret_0
-Saving data to saved_server/server_application_traffic_secret_0
-Saving data to saved_server/handshake_6
-Saving data to saved_server/handshake_7
-Saving data to saved_server/handshake_8
-  Handshake time: 0.077 seconds
-  Version: TLS 1.3
-```  
+0 Client Hello
+      -- enough for client_early_traffic_secret
+1 Server Hello
+      -- enough for client_handshake_traffic_secret
+2 Encrypted Extensions (very small)
+3 Certificate (< 500 bytes)
+4 Certificate Verify (< 100 bytes)
+5 server Finished (4 + hash.length = 36 bytes)
+6 client Finished (4 + hash.length = 36 bytes)
+      -- enough for client_application_traffic_secret_0
+
+extra: server send tickets
+```
+
+Note: Use the transcript until "client Finished". No more. No less.

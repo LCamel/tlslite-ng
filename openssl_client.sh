@@ -20,6 +20,8 @@ echo " - Signature Algorithms: $SIGALGS"
 echo " - Named Group         : $TLS_GROUPS"
 echo ""
 
+export SSLKEYLOGFILE=keylog.txt
+rm -f "$SSLKEYLOGFILE"
 printf "$REQUEST" | \
 openssl s_client \
   -connect "${HOST}:${PORT}" \
@@ -28,7 +30,8 @@ openssl s_client \
   -groups "$TLS_GROUPS" \
   -sigalgs "$SIGALGS" \
   -ign_eof \
-  -ignore_unexpected_eof
+  -ignore_unexpected_eof \
+  -keylogfile keylog.txt
 
 #  -servername "$HOST" \
 #  -alpn http/1.1 \
