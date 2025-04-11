@@ -238,6 +238,33 @@ from pathlib import Path
 def read_bytes(filename):
     return Path("sample_data/server_openssl_client/saved_server/" + filename).read_bytes()
 
+#import re
+#def read_handshake_bytes():
+#    idx_to_name = {}
+#    for item in Path("sample_data/server_openssl_client/saved_server").iterdir():
+#        match = re.search(r"_handshake_(\d+)$", item.name)
+#        if match:
+#            idx_to_name[match.group(1)] = item.name
+#
+#    print(idx_to_name)
+#    result = []
+#    idx = 0
+#    while True:
+#        result.append(read_bytes(idx_to_name[str(idx)]))
+#        if result[idx][0] == 20: # Finished
+#            return result
+#        idx += 1
+#
+#handshake_bytes = read_handshake_bytes()
+
+handshake_bytes = [
+    read_bytes("000_handshake_0"), # client_hello (1)
+    read_bytes("004_handshake_1"), # server_hello (2)
+    read_bytes("009_handshake_2"), # encrypted_extensions (8)
+    read_bytes("010_handshake_3"), # certificate (11)
+    read_bytes("011_handshake_4"), # certificate_verify (15)
+    read_bytes("012_handshake_5"), # finished (20) <== server Finished
+] 
 
 hash_length = 32
 zero = b'\x00' * hash_length
@@ -247,7 +274,7 @@ early_secret = HKDF_extract(zero, PSK)
 print("early_secret: ", early_secret.hex())
 assert early_secret == read_bytes("005_early_secret")
 
-client_hello = read_bytes("000_handshake_0")
+client_hello = handshake_bytes[0]
 dh_shared_secret = read_bytes("003_dh_shared_secret")
 
 d1 = derive_secret(early_secret, b"derived", b"")
@@ -256,7 +283,7 @@ handshake_secret = HKDF_extract(d1, dh_shared_secret)
 print("handshake_secret: ", handshake_secret.hex())
 assert handshake_secret == read_bytes("006_handshake_secret")
 
-server_hello = read_bytes("004_handshake_1")
+server_hello = handshake_bytes[1]
 client_handshake_traffic_secret = derive_secret(handshake_secret, b"c hs traffic", client_hello + server_hello)
 print("client_handshake_traffic_secret: ", client_handshake_traffic_secret.hex())
 assert client_handshake_traffic_secret == read_bytes("008_client_handshake_traffic_secret")
@@ -270,14 +297,7 @@ master_secret = HKDF_extract(d2, zero)
 print("master_secret: ", master_secret.hex())
 assert master_secret == read_bytes("013_master_secret")
 
-handshake_all = (
-    read_bytes("000_handshake_0") +
-    read_bytes("004_handshake_1") +
-    read_bytes("009_handshake_2") +
-    read_bytes("010_handshake_3") +
-    read_bytes("011_handshake_4") +
-    read_bytes("012_handshake_5")
-)
+handshake_all = b''.join(handshake_bytes)
 
 client_application_traffic_secret_0 = derive_secret(master_secret, b"c ap traffic", handshake_all)
 print("client_application_traffic_secret_0: ", client_application_traffic_secret_0.hex())
@@ -287,5 +307,6 @@ server_application_traffic_secret_0 = derive_secret(master_secret, b"s ap traffi
 print("server_application_traffic_secret_0: ", server_application_traffic_secret_0.hex())
 assert server_application_traffic_secret_0 == read_bytes("015_server_application_traffic_secret_0")
 
-
-
+print("compare with keylog.txt:")
+import subprocess
+subprocess.run(["grep", "-i", server_application_traffic_secret_0.hex(), "sample_data/server_openssl_client/keylog.txt"], check=True)
