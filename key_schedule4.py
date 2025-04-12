@@ -4,7 +4,7 @@ TLS 1.3 Key Schedule Implementation.
 This module implements the Key Schedule as defined in TLS 1.3 (RFC 8446).
 """
 
-from key_schedule3 import KeyScheduleFunctions
+from key_schedule_functions import KeyScheduleFunctions
 
 class KeySchedule:
     """
