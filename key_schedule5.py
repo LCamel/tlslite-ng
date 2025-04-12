@@ -6,7 +6,7 @@ using the KeySchedule class from key_schedule4.py with the provided DH shared se
 """
 
 import hashlib
-from key_schedule4 import KeySchedule
+from key_schedule import KeySchedule
 from pathlib import Path
 
 def read_bytes(filename):
