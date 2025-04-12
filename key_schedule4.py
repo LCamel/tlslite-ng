@@ -5,7 +5,6 @@ This module implements the Key Schedule as defined in TLS 1.3 (RFC 8446).
 """
 
 from key_schedule3 import KeyScheduleFunctions
-from key_schedule2 import HKDF
 
 class KeySchedule:
     """
@@ -26,7 +25,6 @@ class KeySchedule:
         self.hash_func = hash_func
         self.hash_len = hash_func().digest_size
         self.key_funcs = KeyScheduleFunctions(hash_func)
-        self.hkdf = HKDF(hash_func)
         
         # Initialize the zero buffer used in multiple places
         self.zero = b'\x00' * self.hash_len
@@ -60,7 +58,7 @@ class KeySchedule:
         self.psk = psk
         
         # Calculate early_secret
-        self.early_secret = self.hkdf.extract(self.zero, self.psk)
+        self.early_secret = self.key_funcs.HKDF_extract(self.zero, self.psk)
     
     def set_DH_shared_secret(self, dh_shared_secret):
         """
@@ -75,11 +73,11 @@ class KeySchedule:
         derived_early = self.key_funcs.derive_secret(self.early_secret, b"derived", b"")
         
         # Calculate handshake_secret
-        self.handshake_secret = self.hkdf.extract(derived_early, self.dh_shared_secret)
+        self.handshake_secret = self.key_funcs.HKDF_extract(derived_early, self.dh_shared_secret)
         
         # Calculate master_secret as well
         derived_handshake = self.key_funcs.derive_secret(self.handshake_secret, b"derived", b"")
-        self.master_secret = self.hkdf.extract(derived_handshake, self.zero)
+        self.master_secret = self.key_funcs.HKDF_extract(derived_handshake, self.zero)
     
     def add_handshake(self, handshake_data):
         """
