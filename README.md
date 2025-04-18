@@ -75,3 +75,10 @@ server_application_traffic_secret_0:  22f1d85fee065f6761b9ecb1bbee4e7751a45dbebf
 compare with keylog.txt:
 SERVER_TRAFFIC_SECRET_0 95310ebc20ca48ea1a1050ce1c3792fc7b63cf84eaaa3ac3559f0b727ee32280 22f1d85fee065f6761b9ecb1bbee4e7751a45dbebf67f7ba45f6b035818aa089
 ```
+
+
+```
+create a function traffic_key_and_iv(traffic_secret)
+implements "7.3. Traffic Key Calculation" in the TLS 1.3 spec
+return key, iv
+```
