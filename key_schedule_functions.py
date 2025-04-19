@@ -19,15 +19,19 @@ class KeyScheduleFunctions:
     As defined in RFC 8446, Section 7.1.
     """
     
-    def __init__(self, hash_func):
+    def __init__(self, hash_func, key_length=16, iv_length=12):
         """
         Initialize the KeyScheduleFunctions with a hash function.
         
         Args:
             hash_func: A hash function like hashlib.sha256
+            key_length: Length of the key in bytes (default is 16 bytes/128 bits, suitable for AES-128)
+            iv_length: Length of the IV in bytes (default is 12 bytes/96 bits, as required for AEAD)
         """
         self.hash_func = hash_func
         self.hash_len = hash_func().digest_size
+        self.key_length = key_length
+        self.iv_length = iv_length
     
     def HKDF_extract(self, salt, ikm):
         """
@@ -158,3 +162,24 @@ class KeyScheduleFunctions:
         
         # Call HKDF-Expand-Label with the transcript hash as context
         return self.hkdf_expand_label(secret, label, transcript_hash, self.hash_len)
+        
+    def traffic_key_and_iv(self, traffic_secret):
+        """
+        Traffic Key Calculation as defined in TLS 1.3 (RFC 8446, Section 7.3).
+        
+        [sender]_write_key = HKDF-Expand-Label(Secret, "key", "", key_length)
+        [sender]_write_iv  = HKDF-Expand-Label(Secret, "iv", "", iv_length)
+        
+        Args:
+            traffic_secret: The traffic secret (e.g., client_handshake_traffic_secret)
+            
+        Returns:
+            A tuple of (key, iv) derived from the traffic secret
+        """
+        # Generate the traffic key
+        key = self.hkdf_expand_label(traffic_secret, b"key", b"", self.key_length)
+        
+        # Generate the traffic IV
+        iv = self.hkdf_expand_label(traffic_secret, b"iv", b"", self.iv_length)
+        
+        return key, iv
