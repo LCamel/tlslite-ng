@@ -112,17 +112,12 @@ class KeySchedule:
         
         return (self.client_handshake_traffic_secret, self.server_handshake_traffic_secret)    
     
-    def calc_master_derived_secrets(self):
+    def calc_application_traffic_secrets(self):
         """
-        Calculate all master-derived secrets based on current transcript:
-        - client_application_traffic_secret_0
-        - server_application_traffic_secret_0
-        - exporter_master_secret
-        - resumption_master_secret
+        Calculate client and server application traffic secrets based on current transcript.
         
         Returns:
-            A tuple of (client_application_traffic_secret_0, server_application_traffic_secret_0,
-                        exporter_master_secret, resumption_master_secret)
+            A tuple of (client_application_traffic_secret_0, server_application_traffic_secret_0)
         """
         if not self.master_secret:
             raise ValueError("Master secret not yet established, call set_DH_shared_secret first")
@@ -140,12 +135,39 @@ class KeySchedule:
             self.transcript
         )
         
+        return (
+            self.client_application_traffic_secret_0,
+            self.server_application_traffic_secret_0
+        )
+    
+    def calc_exporter_master_secret(self):
+        """
+        Calculate exporter master secret based on current transcript.
+        
+        Returns:
+            The exporter_master_secret
+        """
+        if not self.master_secret:
+            raise ValueError("Master secret not yet established, call set_DH_shared_secret first")
+        
         # Calculate exporter master secret
         self.exporter_master_secret = self.key_funcs.derive_secret(
             self.master_secret, 
             b"exp master", 
             self.transcript
         )
+        
+        return self.exporter_master_secret
+    
+    def calc_resumption_master_secret(self):
+        """
+        Calculate resumption master secret based on current transcript.
+        
+        Returns:
+            The resumption_master_secret
+        """
+        if not self.master_secret:
+            raise ValueError("Master secret not yet established, call set_DH_shared_secret first")
         
         # Calculate resumption master secret
         self.resumption_master_secret = self.key_funcs.derive_secret(
@@ -154,9 +176,4 @@ class KeySchedule:
             self.transcript
         )
         
-        return (
-            self.client_application_traffic_secret_0,
-            self.server_application_traffic_secret_0,
-            self.exporter_master_secret,
-            self.resumption_master_secret
-        )
+        return self.resumption_master_secret

@@ -20,6 +20,7 @@ encrypted_extensions = read_bytes("009_handshake_2")  # encrypted_extensions (8)
 certificate = read_bytes("010_handshake_3")  # certificate (11)
 certificate_verify = read_bytes("011_handshake_4")  # certificate_verify (15)
 server_finished = read_bytes("012_handshake_5")  # finished (20) <== server Finished
+client_finished = read_bytes("016_handshake_6")  # finished (20) <== client Finished
 
 # Initialize KeySchedule with SHA-256
 key_schedule = KeySchedule(hashlib.sha256)
@@ -46,8 +47,11 @@ key_schedule.add_handshake(certificate)
 key_schedule.add_handshake(certificate_verify)
 key_schedule.add_handshake(server_finished)
 
-# Calculate application traffic secrets and other master-derived secrets
-client_app_traffic, server_app_traffic, exporter_secret, resumption_secret = key_schedule.calc_master_derived_secrets()
+client_app_traffic_0, server_app_traffic_0 = key_schedule.calc_application_traffic_secrets()
+print("client_application_traffic_secret_0:", client_app_traffic_0.hex())
+exporter_master_secret = key_schedule.calc_exporter_master_secret()
+print("exporter_master_secret:", exporter_master_secret.hex())
 
-# Print the client_application_traffic_secret_0 in hex format
-print("client_application_traffic_secret_0:", client_app_traffic.hex())
+key_schedule.add_handshake(client_finished)
+resumption_master_secret = key_schedule.calc_resumption_master_secret()
+print("resumption_master_secret:", resumption_master_secret.hex())
